@@ -133,7 +133,6 @@
         const imgQrBesar = document.getElementById('img-qr-besar');
         const modalTerlewat = document.getElementById('modal-terlewat'); 
 
-        // TAMBAHAN: Variabel Timer Mobile
         let mobileTimerInterval;
         let mobileTimeLeft = 30;
         const callTimerEl = document.getElementById('call-timer');
@@ -141,9 +140,20 @@
 
         function formatNumber(num) { return num.toString().padStart(3, '0'); }
 
+        // PERBAIKAN 1: Ekstraksi URL yang Tahan Banting (Kebal Redirect)
         const urlParams = new URLSearchParams(window.location.search);
-        const tiketBawaanNomor = urlParams.get('nomor');
-        const tiketBawaanKode = urlParams.get('kode');
+        let tiketBawaanNomor = urlParams.get('nomor');
+        let tiketBawaanKode = urlParams.get('kode');
+
+        // Jika URL Parameters hilang, gunakan Regex dari URL Href secara paksa
+        if (!tiketBawaanNomor) {
+            const matchNomor = window.location.href.match(/[?&]nomor=([^&]+)/);
+            if (matchNomor) tiketBawaanNomor = matchNomor[1];
+        }
+        if (!tiketBawaanKode) {
+            const matchKode = window.location.href.match(/[?&]kode=([^&]+)/);
+            if (matchKode) tiketBawaanKode = matchKode[1];
+        }
 
         if (tiketBawaanNomor && tiketBawaanKode) {
             myNumberEl.innerText = tiketBawaanNomor;
@@ -158,12 +168,17 @@
 
         async function ambilAntreanSaya() {
             try {
-                const response = await fetch(`${API_BASE_URL}/antrean/ambil/`, { method: 'POST' });
+                // PERBAIKAN 2: Wajib mengirimkan data JSON agar API Django mau menerima POST
+                const response = await fetch(`${API_BASE_URL}/antrean/ambil/`, { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nama: 'Anonim Mobile', nim: '-', keperluan: 'Ambil via HP' })
+                });
+
                 if (response.ok) {
-                    const statusRes = await fetch(`${API_BASE_URL}/antrean/status/`);
-                    const data = await statusRes.json();
-                    
-                    const nomorSaya = formatNumber(data.antrean_sekarang + data.sisa_menunggu);
+                    // PERBAIKAN 3: Tangkap nomor resmi dari database, jangan hitung manual
+                    const resultData = await response.json();
+                    const nomorSaya = formatNumber(resultData.nomor);
                     
                     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
                     let kodeUnik = '';
@@ -180,13 +195,14 @@
                     btnAmbilEl.classList.replace('bg-blue-600', 'bg-green-600');
                     btnAmbilEl.disabled = true;
                     fetchStatus();
+                } else {
+                    alert("Gagal mengambil antrean.");
                 }
-            } catch (err) { alert("Server Django mati."); }
+            } catch (err) { alert("Server API belum merespons."); }
         }
 
-        // TAMBAHAN: Fungsi Mulai/Stop Timer Mobile
         function startMobileTimer() {
-            if (mobileTimerInterval) return; // Jika sudah jalan, jangan mulai ulang
+            if (mobileTimerInterval) return; 
             mobileTimeLeft = 30;
             callTimerEl.classList.remove('hidden');
             mobileTimerText.innerText = mobileTimeLeft;
@@ -221,11 +237,10 @@
                         const angkaSaya = parseInt(myNumStr, 10);
                         const angkaLayan = parseInt(data.antrean_sekarang, 10);
                         
-                        // TAMBAHAN: Logika Menjalankan Timer atau Lewat
                         if (angkaLayan === angkaSaya) {
-                            startMobileTimer(); // Waktunya giliran pengunjung ini!
+                            startMobileTimer(); 
                         } else {
-                            stopMobileTimer(); // Sembunyikan timer jika belum/sudah lewat
+                            stopMobileTimer(); 
                         }
 
                         if (angkaLayan > angkaSaya) {
@@ -251,8 +266,9 @@
             modalQr.classList.remove('flex');
         }
 
+        // Mulai jalankan sinkronisasi data live
         fetchStatus();
-        setInterval(fetchStatus, 1000); 
+        setInterval(fetchStatus, 3000); 
     </script>
 </body>
 </html>
