@@ -2,14 +2,27 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('antrean/ambil/', views.ambil_antrean, name='ambil_antrean'),
-    path('antrean/status/', views.status_antrean, name='status_antrean'),
-    path('antrean/panggil/', views.panggil_antrean, name='panggil_antrean'),
+    # ================= RUTE HALAMAN WEB (TAMPILAN UI) =================
+    # Halaman utama (Layar TV Monitor) saat membuka https://iot-4-three.vercel.app/
+    path('', views.index_view, name='index'), 
     
-    # ================= TAMBAHAN RUTE BARU =================
-    path('antrean/selesai/', views.selesai_antrean, name='selesai_antrean'),
-    path('antrean/lewati/', views.lewati_antrean, name='lewati_antrean'),
-    # ======================================================
+    # Halaman Kiosk Registrasi
+    path('registrasi/', views.registrasi_view, name='registrasi'), 
+    
+    # Halaman Tiket di HP Pengunjung
+    path('tiket-mobile/', views.mobile_view, name='mobile'), 
+    # ==================================================================
 
-    path('antrean/reset/', views.reset_antrean, name='reset_antrean'), 
+
+    # ================= RUTE API (UNTUK ESP32 & JAVASCRIPT) =================
+    path('api/antrean/ambil/', views.ambil_antrean, name='ambil_antrean'),
+    path('api/antrean/status/', views.status_antrean, name='status_antrean'),
+    path('api/antrean/panggil/', views.panggil_antrean, name='panggil_antrean'),
+    
+    # Tambahan rute baru untuk fitur Kasir/Admin
+    path('api/antrean/selesai/', views.selesai_antrean, name='selesai_antrean'),
+    path('api/antrean/lewati/', views.lewati_antrean, name='lewati_antrean'),
+    
+    path('api/antrean/reset/', views.reset_antrean, name='reset_antrean'), 
+    # =======================================================================
 ]
