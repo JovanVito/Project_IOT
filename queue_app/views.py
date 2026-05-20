@@ -1,10 +1,24 @@
-from django.shortcuts import render # <--- TAMBAHAN WAJIB AGAR TIDAK ERROR 500 DI HALAMAN DEPAN
+from django.shortcuts import render
+from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.utils import timezone
 from .models import Antrean
 
+# ================= FUNGSI UNTUK MENAMPILKAN HALAMAN WEB =================
+def index_view(request):
+    return render(request, 'index.html')
+
+def registrasi_view(request):
+    return render(request, 'registrasi.html')
+
+def mobile_view(request):
+    return render(request, 'mobile.html')
+# ========================================================================
+
+
+# ================= FUNGSI API CORE (ESP32 & WEB) =================
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def ambil_antrean(request):
@@ -14,7 +28,6 @@ def ambil_antrean(request):
         
         nomor_baru = 1 if not antrean_terakhir else antrean_terakhir.nomor_antrean + 1
         
-        # DRF otomatis parsing JSON, asalkan ESP32 pakai header Content-Type: application/json
         nama_pengunjung = request.data.get('nama', 'Anonim Walk-in')
         nim_pengunjung = request.data.get('nim', '-')
         keperluan_pengunjung = request.data.get('keperluan', 'Ambil via Sensor')
@@ -29,19 +42,13 @@ def ambil_antrean(request):
         return Response({'message': 'Antrean berhasil diambil', 'nomor': antrean.nomor_antrean}, status=201)
     
     except Exception as e:
-        # JIKA TERJADI ERROR, VERCEL TIDAK AKAN 500, TAPI MENGELUARKAN PESAN ERRORNYA!
         return Response({'error': str(e)}, status=400)
-
-
-def home(request):
-    return render(request, 'index.html')
 
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def status_antrean(request):
     try:
-        # PERBAIKAN: Menyesuaikan status huruf kecil sesuai models.py baru
         antrean_sekarang = Antrean.objects.filter(status='proses').order_by('-waktu_dipanggil').first()
         sisa_menunggu = Antrean.objects.filter(status='menunggu').count()
         
@@ -57,7 +64,6 @@ def status_antrean(request):
 @permission_classes([AllowAny])
 def panggil_antrean(request):
     try:
-        # PERBAIKAN: Cari status 'menunggu', lalu ubah ke 'proses'
         antrean_selanjutnya = Antrean.objects.filter(status='menunggu').order_by('waktu_dibuat').first()
         
         if antrean_selanjutnya:
@@ -71,7 +77,6 @@ def panggil_antrean(request):
         return Response({'error': str(e)}, status=400)
 
 
-# ================= TAMBAHAN STATUS: SELESAI & TERLEWATI =================
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def selesai_antrean(request):
@@ -92,7 +97,6 @@ def lewati_antrean(request):
         antrean.save()
         return Response({'message': f'Antrean {antrean.nomor_antrean} dilewati'}, status=200)
     return Response({'message': 'Tidak ada antrean yang sedang diproses'}, status=400)
-# ========================================================================
 
 
 @api_view(['DELETE'])
@@ -100,6 +104,7 @@ def lewati_antrean(request):
 def reset_antrean(request):
     Antrean.objects.all().delete()
     return Response({'message': 'Semua antrean berhasil dihapus dan direset ke 0'})
+# ========================================================================
 
 
 # ================= FUNGSI BARU: DAFTAR TUNGGU UNTUK TV =================
@@ -113,12 +118,12 @@ def daftar_antrean_api(request):
         data = []
         for item in antrean_list:
             data.append({
-                'nomor': item.nomor_antrean, # Di database kamu namanya nomor_antrean
+                'nomor': item.nomor_antrean,
                 'nama': item.nama,
                 'keperluan': item.keperluan
             })
         
-        return Response({'daftar': data})
+        return JsonResponse({'daftar': data})
     except Exception as e:
-        return Response({'error': str(e)}, status=400)
+        return JsonResponse({'error': str(e)}, status=400)
 # =======================================================================
