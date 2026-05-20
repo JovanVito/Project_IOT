@@ -4,7 +4,7 @@ from . import views
 urlpatterns = [
     # ================= RUTE HALAMAN WEB (TAMPILAN UI) =================
     # Halaman utama (Layar TV Monitor) saat membuka https://iot-4-three.vercel.app/
-    path('', views.index_view, name='index'), 
+    path('', views.home, name='index'), # Disesuaikan dengan nama fungsi "home" di views.py
     
     # Halaman Kiosk Registrasi
     path('registrasi/', views.registrasi_view, name='registrasi'), 
@@ -24,5 +24,8 @@ urlpatterns = [
     path('api/antrean/lewati/', views.lewati_antrean, name='lewati_antrean'),
     
     path('api/antrean/reset/', views.reset_antrean, name='reset_antrean'), 
-    # =======================================================================
+    
+    # ======== RUTE BARU: UNTUK TABEL DI LAYAR TV ========
+    path('api/antrean/daftar/', views.daftar_antrean_api, name='daftar_antrean_api'),
+    # =======================================================
 ]
