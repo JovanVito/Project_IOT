@@ -100,3 +100,25 @@ def lewati_antrean(request):
 def reset_antrean(request):
     Antrean.objects.all().delete()
     return Response({'message': 'Semua antrean berhasil dihapus dan direset ke 0'})
+
+
+# ================= FUNGSI BARU: DAFTAR TUNGGU UNTUK TV =================
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def daftar_antrean_api(request):
+    try:
+        # Ambil 10 data teratas yang statusnya masih 'menunggu'
+        antrean_list = Antrean.objects.filter(status='menunggu').order_by('waktu_dibuat')[:10]
+        
+        data = []
+        for item in antrean_list:
+            data.append({
+                'nomor': item.nomor_antrean, # Di database kamu namanya nomor_antrean
+                'nama': item.nama,
+                'keperluan': item.keperluan
+            })
+        
+        return Response({'daftar': data})
+    except Exception as e:
+        return Response({'error': str(e)}, status=400)
+# =======================================================================
