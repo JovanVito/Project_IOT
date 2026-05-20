@@ -149,7 +149,7 @@
 
                     document.getElementById('kiosk-nomor').innerText = nomorSaya;
 
-                    const baseUrlFrontend = window.location.origin; 
+                    const baseUrlFrontend = 'https://project-iot-delta.vercel.app'; 
                     const linkUntukHP = `${baseUrlFrontend}/tiket-mobile/?nomor=${nomorSaya}&kode=${kodeUnik}`;
 
                     const urlGambarQR = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(linkUntukHP)}`;
