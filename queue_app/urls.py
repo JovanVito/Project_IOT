@@ -20,6 +20,9 @@ urlpatterns = [
     path('api/antrean/selesai/', views.selesai_antrean, name='selesai_antrean'),
     path('api/antrean/lewati/', views.lewati_antrean, name='lewati_antrean'),
     path('api/antrean/reset/', views.reset_antrean, name='reset_antrean'), 
+    path('api/antrean/panggil/', views.panggil_antrean, name='panggil'),
+    path('api/antrean/reset/', views.reset_antrean, name='reset'),
+    path('api/antrean/daftar/', views.daftar_antrean_api, name='daftar_antrean_api'),
     
     # ======== RUTE BARU: UNTUK TABEL DI LAYAR TV ========
     path('api/antrean/daftar/', views.daftar_antrean_api, name='daftar_antrean_api'),
